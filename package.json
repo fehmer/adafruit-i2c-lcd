@@ -1,0 +1,31 @@
+{
+  "name": "adafruit-i2c-lcd",
+  "version": "0.0.1",
+  "description": "Node Library for using adafruit i2c rgb lcd pi plate",
+  "main": "index.js",
+  "dependencies": {
+    "i2c": "~0.1",
+    "coffee-script": "~1.6"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "test.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@git.sexy-developer.com:cfe/adafruit-i2c-lcd.git"
+  },
+  "keywords": [
+    "raspberry",
+    "pi",
+    "adafruit",
+    "i2c",
+    "lcd",
+    "rgb",
+    "plate"
+  ],
+  "author": "Christian Fehmer",
+  "license": "BSD"
+}
