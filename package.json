@@ -4,8 +4,8 @@
   "description": "Node Library for using adafruit i2c rgb lcd pi plate",
   "main": "index",
   "dependencies": {
-    "raspi2c": "git://github.com/sysrun/node-raspi2c#master",
-    "coffee-script": "~1.6"
+    "coffee-script": "",
+    "i2c": ""
   },
   "directories": {
     "test": "test"

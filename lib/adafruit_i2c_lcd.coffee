@@ -58,21 +58,24 @@ flip = [0x00, 0x10, 0x08, 0x18,
 		0x04, 0x14, 0x0C, 0x1C,
 		0x02, 0x12, 0x0A, 0x1A,
 		0x06, 0x16, 0x0E, 0x1E]
-pollables = [ LCD_CLEARDISPLAY, LCD_RETURNHOME ];
+pollables = [ LCD_CLEARDISPLAY, LCD_RETURNHOME ]
 
 EventEmitter = require('events').EventEmitter
-I2C = require('i2c');
+I2C = require('i2c')
 
+errorHandler = (err)->
+	console.log "ERR:", err if err?
 
 class Plate extends EventEmitter
-	constructor: (parameter) ->
-		@parameter=parameter
-		@ADDRESS = 0x20
+	constructor: (device, address) ->
+		@ADDRESS = address
 		@PORTA = 0
 		@PORTB = 0
 		@DDRB = 0x10
 
+		@WIRE = new I2C(@ADDRESS, {device: device})
 		@WIRE = new I2C(@ADDRESS, {device: '/dev/i2c-1'})
+
 		@init()
 	
 	color:
@@ -91,13 +94,20 @@ class Plate extends EventEmitter
 	
 	backlight: (color) ->
 		c = ~color
-		console.log "backlight", @PORTA, @PORTB
 		@PORTA = (@PORTA & 0x3F)  | ((c & 0x3) << 6)
 		@PORTB = (@PORTB & 0xFE)  | ((c & 0x4) >> 2)
 		# Has to be done as two writes because sequential operation is off.
-		console.log @PORTA, @PORTB
 		@sendBytes(MCP23017_GPIOA, @PORTA)
 		@sendBytes(MCP23017_GPIOB, @PORTB)
+		
+
+	message: (text) ->
+		lines = text.split('\n')    # Split at newline(s)
+		for line in lines
+			console.log line
+			#zeilenumbruch
+			@writeByte(line, true)       # Issue substring
+
 	
 
 	init: ()->
@@ -140,13 +150,25 @@ class Plate extends EventEmitter
 		@writeByte(LCD_CURSORSHIFT | displayshift)
 		@writeByte(LCD_ENTRYMODESET | displaymode)
 		@writeByte(LCD_DISPLAYCONTROL | displaycontrol)
-		@writeByte(LCD_RETURNHOME)    
-	
+		@writeByte(LCD_RETURNHOME)
+
+		@clear
+		@backlight 0x0
+
 	sendBytes: (cmd, values) ->
-		#console.log "writing " + JSON.stringify(values) + " to "+ cmd
+		reg=cmd
+		console.log typeof values, values
+		if typeof values is 'number'
+			data=[]
+			data.push(values)
+			values=data
+
+		console.log JSON.stringify({fn: "data",data: values,address:@ADDRESS, target: cmd})
 		@WIRE.writeBytes(cmd, values)
+
+  
 	sendByte: (value) ->
-		#console.log "writing " + value
+		console.log {fn: "byte",data: value,address:@ADDRESS}
 		@WIRE.writeByte(value)
 
 	maskOut: (bitmask, value) ->
@@ -167,8 +189,12 @@ class Plate extends EventEmitter
 	# startup, and polling will then occur before more commands or data
 	# are issued.
 	writeByte: (value, char_mode) ->
-		console.log 'write byte', value
 		char_mode = char_mode || false
+		console.log {
+			fn: "write"
+			value: value
+			char: char_mode
+		}
 		# If pin D7 is in input state, poll LCD busy flag until clear.
 		if @DDRB & 0x10
 			lo = (@PORTB & 0x01) | 0x40
@@ -183,6 +209,7 @@ class Plate extends EventEmitter
 				@sendBytes(MCP23017_GPIOB, [lo, hi, lo])
 				break if (bits & 0x2) is 0 # D7=0, not busy
 			@PORTB = lo
+			console.log "portb->", @PORTB
 			# Polling complete, change D7 pin to output
 			@DDRB &= 0xEF
 			@sendBytes(MCP23017_IODIRB, @DDRB)
@@ -194,22 +221,30 @@ class Plate extends EventEmitter
 		if (typeof value == "string")
 			last = value.length-1
 			data = []
-			for i in [0..last]
+			for k in [0..last]
 				# Append 4 bytes to list representing PORTB over time.
-                # First the high 4 data bits with strobe (enable) set
-                # and unset, then same with low 4 data bits (strobe 1/0).
-                data.push(maskOut(bitmask, value[k].charCodeAt(0)))
-                if (data.length >=32 || k == last)
-                	console.log "Sendig char array : ", JSON.stringify(data)
-                	@sendBytes(MCP23017_GPIOB, data)
-                	@PORTB = data[-1]
-                	data=[]
+				# First the high 4 data bits with strobe (enable) set
+				# and unset, then same with low 4 data bits (strobe 1/0).
+				data.push(@maskOut(bitmask, value[k].charCodeAt(0)))
+				if (data.length >=32 || k == last)
+					console.log "Sendig char array : ", JSON.stringify(data)
+					@sendBytes(MCP23017_GPIOB, data)
+					@PORTB = data[data.length-1]
+					data=[]
 		else
 			# Single byte
 			data=@maskOut(bitmask, value)
 			#console.log data
 			@sendBytes(MCP23017_GPIOB, data)
-			@PORTB= data[-1]
+			@PORTB= data[data.length-1]
+
+
+
+		# If a poll-worthy instruction was issued, reconfigure D7
+		# pin as input to indicate need for polling on next call.
+		if(!char_mode && pollables.indexOf(value)!=-1 )
+			@DDRB |= 0x10;
+			@sendBytes(MCP23017_IODIRB, @DDRB);
 	
 	readByte: () ->
 		return @WIRE.readByte()
