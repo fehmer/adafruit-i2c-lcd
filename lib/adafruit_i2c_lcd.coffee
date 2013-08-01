@@ -6,24 +6,6 @@ MCP23017_GPIOA          = 0x09
 MCP23017_IODIRB         = 0x10
 MCP23017_GPIOB          = 0x19
 
-#Port expander input pin definitions
-SELECT                  = 0
-RIGHT                   = 1
-DOWN                    = 2
-UP                      = 3
-LEFT                    = 4
-
-#LED colors
-OFF                     = 0x00
-RED                     = 0x01
-GREEN                   = 0x02
-BLUE                    = 0x04
-YELLOW                  = RED + GREEN
-TEAL                    = GREEN + BLUE
-VIOLET                  = RED + BLUE
-WHITE                   = RED + GREEN + BLUE
-ON                      = RED + GREEN + BLUE
-
 #LCD Commands
 LCD_CLEARDISPLAY        = 0x01
 LCD_RETURNHOME          = 0x02
@@ -66,26 +48,46 @@ I2C = require('i2c')
 errorHandler = (err)->
 	console.log "ERR:", err if err?
 
+
 class Plate extends EventEmitter
-	constructor: (device, address, debug) ->
+	constructor: (device, address, debug, pollInterval) ->
 		@ADDRESS = address
 		@PORTA = 0
 		@PORTB = 0
 		@DDRB = 0x10
 		@WIRE = new I2C(@ADDRESS, {device: device})
 		@DEBUG = debug || false
+		pollInterval=100 if not pollInterval?
 		@init()
-	
-	color:
+		@BSTATE = 0
+		poll = setInterval ()=>
+			cur=@buttonState()
+			if cur != @BSTATE
+				key=@BSTATE ^ cur
+				@emit 'button_change', key
+				if cur<@BSTATE
+					@emit 'button_up', key
+				else
+					@emit 'button_down', key
+				@BSTATE = cur
+		pollInterval
+		
+	colors:
 		OFF: 0x00
 		RED: 0x01
 		GREEN: 0x02
 		BLUE: 0x04
-		YELLOW: RED + GREEN
-		TEAL: GREEN + BLUE
-		VIOLET: RED + BLUE
-		WHITE: RED + GREEN + BLUE
-		ON: RED + GREEN + BLUE
+		YELLOW: 0x03
+		TEAL: 0x06
+		VIOLET: 0x05
+		WHITE: 0x07
+		ON: 0x07
+	buttons:
+		SELECT: 0x01
+		RIGHT: 0x02
+		DOWN: 0x04
+		UP: 0x08
+		LEFT: 0x10
 
 	clear: () ->
 		@writeByte LCD_CLEARDISPLAY
@@ -103,7 +105,6 @@ class Plate extends EventEmitter
 		@sendBytes(MCP23017_GPIOA, @PORTA)
 		@sendBytes(MCP23017_GPIOB, @PORTB)
 		
-
 	message: (text) ->
 		lines = text.split('\n')    # Split at newline(s)
 		for line, i in lines
@@ -111,7 +112,22 @@ class Plate extends EventEmitter
 				@writeByte 0xC0
 			@writeByte(line, true)       # Issue substring
 
-	
+	buttonState: () ->
+		ret= @WIRE.readBytes MCP23017_GPIOA,1
+		ret= ret[0]&0x1F
+		return ret
+
+
+	buttonName: (val) ->
+		return switch val
+			when @buttons.SELECT then "SELECT"
+			when @buttons.RIGHT then "RIGHT"
+			when @buttons.UP then "UP"
+			when @buttons.DOWN then "DOWN"
+			when @buttons.LEFT then "LEFT"
+			else undefined
+		
+
 
 	init: ()->
 		@sendBytes(MCP23017_IOCON_BANK1, 0)
