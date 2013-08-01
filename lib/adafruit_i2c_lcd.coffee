@@ -67,15 +67,13 @@ errorHandler = (err)->
 	console.log "ERR:", err if err?
 
 class Plate extends EventEmitter
-	constructor: (device, address) ->
+	constructor: (device, address, debug) ->
 		@ADDRESS = address
 		@PORTA = 0
 		@PORTB = 0
 		@DDRB = 0x10
-
 		@WIRE = new I2C(@ADDRESS, {device: device})
-		@WIRE = new I2C(@ADDRESS, {device: '/dev/i2c-1'})
-
+		@DEBUG = debug || false
 		@init()
 	
 	color:
@@ -91,6 +89,11 @@ class Plate extends EventEmitter
 
 	clear: () ->
 		@writeByte LCD_CLEARDISPLAY
+
+	home: () ->
+		@writeByte LCD_RETURNHOME
+
+
 	
 	backlight: (color) ->
 		c = ~color
@@ -103,15 +106,14 @@ class Plate extends EventEmitter
 
 	message: (text) ->
 		lines = text.split('\n')    # Split at newline(s)
-		for line in lines
-			console.log line
-			#zeilenumbruch
+		for line, i in lines
+			if i>0
+				@writeByte 0xC0
 			@writeByte(line, true)       # Issue substring
 
 	
 
 	init: ()->
-		console.log @PORTA, @PORTB
 		@sendBytes(MCP23017_IOCON_BANK1, 0)
 		@sendBytes(0, [
 			0x3F, 	# IODIRA    R+G LEDs=outputs, buttons=inputs
@@ -157,18 +159,17 @@ class Plate extends EventEmitter
 
 	sendBytes: (cmd, values) ->
 		reg=cmd
-		console.log typeof values, values
 		if typeof values is 'number'
 			data=[]
 			data.push(values)
 			values=data
 
-		console.log JSON.stringify({fn: "data",data: values,address:@ADDRESS, target: cmd})
+		console.log JSON.stringify({fn: "data",data: values,address:@ADDRESS, target: cmd}) if @DEBUG
 		@WIRE.writeBytes(cmd, values)
 
   
 	sendByte: (value) ->
-		console.log {fn: "byte",data: value,address:@ADDRESS}
+		console.log {fn: "byte",data: value,address:@ADDRESS} if @DEBUG
 		@WIRE.writeByte(value)
 
 	maskOut: (bitmask, value) ->
@@ -194,7 +195,7 @@ class Plate extends EventEmitter
 			fn: "write"
 			value: value
 			char: char_mode
-		}
+		} if @DEBUG
 		# If pin D7 is in input state, poll LCD busy flag until clear.
 		if @DDRB & 0x10
 			lo = (@PORTB & 0x01) | 0x40
@@ -209,7 +210,6 @@ class Plate extends EventEmitter
 				@sendBytes(MCP23017_GPIOB, [lo, hi, lo])
 				break if (bits & 0x2) is 0 # D7=0, not busy
 			@PORTB = lo
-			console.log "portb->", @PORTB
 			# Polling complete, change D7 pin to output
 			@DDRB &= 0xEF
 			@sendBytes(MCP23017_IODIRB, @DDRB)
@@ -225,16 +225,14 @@ class Plate extends EventEmitter
 				# Append 4 bytes to list representing PORTB over time.
 				# First the high 4 data bits with strobe (enable) set
 				# and unset, then same with low 4 data bits (strobe 1/0).
-				data.push(@maskOut(bitmask, value[k].charCodeAt(0)))
+				data = data.concat(@maskOut(bitmask, value[k].charCodeAt(0)))
 				if (data.length >=32 || k == last)
-					console.log "Sendig char array : ", JSON.stringify(data)
 					@sendBytes(MCP23017_GPIOB, data)
 					@PORTB = data[data.length-1]
 					data=[]
 		else
 			# Single byte
 			data=@maskOut(bitmask, value)
-			#console.log data
 			@sendBytes(MCP23017_GPIOB, data)
 			@PORTB= data[data.length-1]
 
