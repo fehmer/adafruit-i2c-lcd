@@ -50,27 +50,27 @@ errorHandler = (err)->
 
 
 class Plate extends EventEmitter
-	constructor: (device, address, debug, pollInterval) ->
+	constructor: (device, address, pollInterval) ->
 		@ADDRESS = address
 		@PORTA = 0
 		@PORTB = 0
 		@DDRB = 0x10
 		@WIRE = new I2C(@ADDRESS, {device: device})
-		@DEBUG = debug || false
-		pollInterval=100 if not pollInterval?
+		pollInterval=200 if not pollInterval?
 		@init()
 		@BSTATE = 0
-		poll = setInterval ()=>
-			cur=@buttonState()
-			if cur != @BSTATE
-				key=@BSTATE ^ cur
-				@emit 'button_change', key
-				if cur<@BSTATE
-					@emit 'button_up', key
-				else
-					@emit 'button_down', key
-				@BSTATE = cur
-		,pollInterval
+		if pollInterval >0
+			@poll = setInterval ()=>
+				cur=@buttonState()
+				if cur != @BSTATE
+					key=@BSTATE ^ cur
+					@emit 'button_change', key
+					if cur<@BSTATE
+						@emit 'button_up', key
+					else
+						@emit 'button_down', key
+					@BSTATE = cur
+			,pollInterval
 		
 	colors:
 		OFF: 0x00
@@ -95,6 +95,8 @@ class Plate extends EventEmitter
 	home: () ->
 		@writeByte LCD_RETURNHOME
 
+	close: () ->
+		clearInterval(@poll) if @poll?
 
 	
 	backlight: (color) ->
@@ -181,12 +183,10 @@ class Plate extends EventEmitter
 			data.push(values)
 			values=data
 
-		console.log JSON.stringify({fn: "data",data: values,address:@ADDRESS, target: cmd}) if @DEBUG
 		@WIRE.writeBytes(cmd, values)
 
   
 	sendByte: (value) ->
-		console.log {fn: "byte",data: value,address:@ADDRESS} if @DEBUG
 		@WIRE.writeByte(value)
 
 	maskOut: (bitmask, value) ->
@@ -208,11 +208,6 @@ class Plate extends EventEmitter
 	# are issued.
 	writeByte: (value, char_mode) ->
 		char_mode = char_mode || false
-		console.log {
-			fn: "write"
-			value: value
-			char: char_mode
-		} if @DEBUG
 		# If pin D7 is in input state, poll LCD busy flag until clear.
 		if @DDRB & 0x10
 			lo = (@PORTB & 0x01) | 0x40
