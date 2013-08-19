@@ -70,7 +70,7 @@ class Plate extends EventEmitter
 				else
 					@emit 'button_down', key
 				@BSTATE = cur
-		pollInterval
+		,pollInterval
 		
 	colors:
 		OFF: 0x00
@@ -108,9 +108,10 @@ class Plate extends EventEmitter
 	message: (text) ->
 		lines = text.split('\n')    # Split at newline(s)
 		for line, i in lines
-			if i>0
+			if i==1
 				@writeByte 0xC0
-			@writeByte(line, true)       # Issue substring
+			if i<2
+				@writeByte(line, true)       # Issue substring
 
 	buttonState: () ->
 		ret= @WIRE.readBytes MCP23017_GPIOA,1
@@ -241,11 +242,12 @@ class Plate extends EventEmitter
 				# Append 4 bytes to list representing PORTB over time.
 				# First the high 4 data bits with strobe (enable) set
 				# and unset, then same with low 4 data bits (strobe 1/0).
-				data = data.concat(@maskOut(bitmask, value[k].charCodeAt(0)))
-				if (data.length >=32 || k == last)
-					@sendBytes(MCP23017_GPIOB, data)
-					@PORTB = data[data.length-1]
-					data=[]
+				if value[k]?
+					data = data.concat(@maskOut(bitmask, value[k].charCodeAt(0)))
+					if (data.length >=32 || k == last)
+						@sendBytes(MCP23017_GPIOB, data)
+						@PORTB = data[data.length-1]
+						data=[]
 		else
 			# Single byte
 			data=@maskOut(bitmask, value)
