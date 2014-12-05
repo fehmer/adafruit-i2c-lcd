@@ -12,7 +12,7 @@ Usage
 LCDPLATE=require('adafruit-i2c-lcd').plate
 lcd=new LCDPLATE  '/dev/i2c-1', 0x20
 
-lcd.backlight = lcd.colors.red
+lcd.backlight = lcd.colors.RED
 lcd.message 'Hello World!'
 ```
 
