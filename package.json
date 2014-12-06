@@ -10,7 +10,7 @@
     "coffee-script": ""
   },
   "scripts":{
-    "build": "node_modules/coffee-script/bin/coffee -o lib -c src"
+    "prepublish": "node_modules/coffee-script/bin/coffee -o lib -c src"
     },
   "repository": {
     "type": "git",
