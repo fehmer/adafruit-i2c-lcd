@@ -4,7 +4,6 @@ Node.js implementation for the Adafruit RGB 16x2 LCD+Keypad Kit for Raspberry Pi
 http://www.adafruit.com/products/1110
 
 
-
 ## Usage
 
 1. read the [i2c documentation](https://www.npmjs.org/package/i2c) how to setup your raspberry pi.
