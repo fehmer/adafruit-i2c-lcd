@@ -1,19 +1,35 @@
-Adafruit I2C LCD Plate
-======================
+# Adafruit I2C LCD Plate
 
 Node.js implementation for the Adafruit RGB 16x2 LCD+Keypad Kit for Raspberry Pi 
 http://www.adafruit.com/products/1110
 
 
+## Usage
 
-Usage
------
+1. read the [i2c documentation](https://www.npmjs.org/package/i2c) how to setup your raspberry pi.
+2. add dependency using ```npm install adafruit-i2c-lcd --save```
+3. copy the example (coffee or js) and run them using ```coffee``` or ```node```. Maybe you have to run them as root.
+
+### coffeescript
+
 ```coffeescript
 LCDPLATE=require('adafruit-i2c-lcd').plate
 lcd=new LCDPLATE  '/dev/i2c-1', 0x20
 
-lcd.backlight = lcd.colors.RED
+lcd.backlight lcd.colors.RED
 lcd.message 'Hello World!'
+```
+
+### javascript
+
+```javascript
+var LCDPLATE, lcd;
+LCDPLATE = require('adafruit-i2c-lcd').plate;
+lcd = new LCDPLATE('/dev/i2c-1', 0x20);
+
+lcd.backlight(lcd.colors.RED);
+lcd.message('Hello World!');
+
 ```
 
 API
