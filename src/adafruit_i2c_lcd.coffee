@@ -71,7 +71,7 @@ class Plate extends EventEmitter
 						@emit 'button_down', key
 					@BSTATE = cur
 			,pollInterval
-		
+
 	colors:
 		OFF: 0x00
 		RED: 0x01
@@ -113,10 +113,10 @@ class Plate extends EventEmitter
 			if i==1
 				@writeByte 0xC0
 			if i<2
-				@writeByte(line, true)       # Issue substring
+				@writeByte(line, true )       # Issue substring
 
 	buttonState: () ->
-		ret= @WIRE.readBytes MCP23017_GPIOA,1
+		ret= @WIRE.readBytes MCP23017_GPIOA,1, errorHandler
 		ret= ret[0]&0x1F
 		return ret
 
@@ -183,11 +183,11 @@ class Plate extends EventEmitter
 			data.push(values)
 			values=data
 
-		@WIRE.writeBytes(cmd, values)
+		@WIRE.writeBytes(cmd, values, errorHandler )
 
   
 	sendByte: (value) ->
-		@WIRE.writeByte(value)
+		@WIRE.writeByte(value, errorHandler )
 
 	maskOut: (bitmask, value) ->
 		hi = bitmask | flip[value >> 4]
@@ -258,7 +258,7 @@ class Plate extends EventEmitter
 			@sendBytes(MCP23017_IODIRB, @DDRB);
 	
 	readByte: () ->
-		return @WIRE.readByte()
+		return @WIRE.readByte( errorHandler )
 
 
 module.exports = Plate

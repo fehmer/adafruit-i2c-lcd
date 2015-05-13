@@ -3,6 +3,10 @@
 Node.js implementation for the Adafruit RGB 16x2 LCD+Keypad Kit for Raspberry Pi 
 http://www.adafruit.com/products/1110
 
+**Note!**
+
+Use version 0.0.3 for node js 0.11 and under and version 0.1.x for node js 0.12!
+
 
 ## Usage
 
