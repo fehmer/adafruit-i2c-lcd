@@ -116,6 +116,22 @@ Parameters:
     
 * button: the button, See LCDPLATE.buttons for button values.
 
+## Compatibility
+
+This library is compatible with the Sainsmart 1602 I2C (SKU: 20-011-221)
+with some notable exceptions.  This clone has a blue backlight and an
+RGB LED on-board.
+
+* The [LCDPLATE.backlight()](#lcdplatebacklightcolornumber) function
+changes the RGB LED rather than the backlight.
+* The backlight on the LCD is connected to GPA5, which is the sixth (6th)
+bit of port A.  It can be set on or off directly in your client code.
+
+```javascript
+    lcd.sendBytes(0, 0x00); // Sainsmart 1602 I2C backlight on
+    lcd.sendBytes(0, 0x20); // Sainsmart 1602 I2C backlight off
+```
+
 ## Licence
 BSD
 
