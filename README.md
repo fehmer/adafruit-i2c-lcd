@@ -3,41 +3,36 @@
 Node.js implementation for the Adafruit RGB 16x2 LCD+Keypad Kit for Raspberry Pi 
 http://www.adafruit.com/products/1110
 
-**Note!**
+**Note:** This readme is for the current version 1.x.x. If you are using older versions please read the [version 0.0.x readme](https://github.com/fehmer/adafruit-i2c-lcd/tree/0.0.x) or [version 0.1.x readme](https://github.com/fehmer/adafruit-i2c-lcd/tree/0.1.x).
 
-Use version 0.0.3 for node js 0.11 and under and version 0.1.x for node js 0.12!
+**Note:** Since version 1.0.0 this module is based on [i2c-bus](https://www.npmjs.com/package/i2c-bus). For compatibility with your node.js version read the i2c-bus documentation. Older versions of this module were based on [i2c](https://www.npmjs.com/package/i2c). adafruit-i2c-lcd version 0.1.x only works with node.js 0.12.x and adafruit-i2c-lcd version 0.0.x only works with node.js 0.10.x.
 
+**Note:** This module is compatible with  Sainsmart 1602 I2C, see [Compatibility](#compatibility)
 
 ## Usage
 
-1. read the [i2c documentation](https://www.npmjs.org/package/i2c) how to setup your raspberry pi.
+1. read the [i2c-bus documentation](https://github.com/fivdi/i2c-bus/blob/master/doc/raspberry-pi-i2c.md) how to setup your raspberry pi.
 2. add dependency using ```npm install adafruit-i2c-lcd --save```
-3. copy the example (coffee or js) and run them using ```coffee``` or ```node```. Maybe you have to run them as root.
+3. Copy and run one of the examples from the examples directory. Maybe you have to run them as root.
 
-### coffeescript
-
-```coffeescript
-LCDPLATE=require('adafruit-i2c-lcd').plate
-lcd=new LCDPLATE  '/dev/i2c-1', 0x20
-
-lcd.backlight lcd.colors.RED
-lcd.message 'Hello World!'
-```
-
-### javascript
+### simple example
 
 ```javascript
 var LCDPLATE, lcd;
 LCDPLATE = require('adafruit-i2c-lcd').plate;
-lcd = new LCDPLATE('/dev/i2c-1', 0x20);
+lcd = new LCDPLATE(1, 0x20);
 
 lcd.backlight(lcd.colors.RED);
 lcd.message('Hello World!');
 
+lcd.on('button_change', function(button) {
+  lcd.clear();
+  lcd.message('Button changed:\n' + lcd.buttonName(button));
+});
 ```
 
-API
-====
+
+## API
 
   - [LCDPLATE(device:String,address:Number,[pollInterval:Number])](#lcdplatedevicestringaddressnumberpollintervalnumber)
   - [LCDPLATE.clear()](#lcdplateclear)
@@ -47,7 +42,7 @@ API
   - [LCDPLATE.buttonState():Number](#lcdplatebuttonstatenumber)
   - [LCDPLATE.buttonName(val:Number):String](#lcdplatebuttonnamevalnumberstring)
 
-## LCDPLATE(device:String,address:Number,[pollInterval:Number])
+### LCDPLATE(device:String,address:Number,[pollInterval:Number])
 
 Setting up a new LCDPLATE. 
 
@@ -55,36 +50,36 @@ Setting up a new LCDPLATE.
 - address: Address of the i2c panel, e.g. 0x20
 - pollInterval: optional. Set the poll interval for the buttons to x ms. Use pollInterval=-1 to disable polling. (Buttons will not work)
 
-## LCDPLATE.clear()
+### LCDPLATE.clear()
 
 Clear the LCD, remove all text.
 
-## LCDPLATE.close()
+### LCDPLATE.close()
 
 Close the LCD plate. Use this to stop the polling.
 
-## LCDPLATE.backlight(color:Number)
+### LCDPLATE.backlight(color:Number)
 
 Set the backlight of the LCD to the given color. You can use predefined colors from the LCDPLATE class: 
 
 LCDPLATE.colors = [OFF, RED, GREEN, BLUE, YELLOW, TEAL, VIOLET, WHITE, ON]
 
 
-## LCDPLATE.message(text:String)
+### LCDPLATE.message(text:String)
 
 Display the text on the LCD. Use \n as line feed. Only the first two lines will be sent to the display.
 
-## LCDPLATE.buttonState():Number
+### LCDPLATE.buttonState():Number
 
 Returns the pressed buttons as a number. Use bitmasks to mask out the state of the desired button. See LCDPLATE.buttons for button values.
 
-## LCDPLATE.buttonName(val:Number):String
+### LCDPLATE.buttonName(val:Number):String
 
 Returns the name, e.g. 'SELECT' to a button number. See LCDPLATE.buttons for button values.
 
-# Events
+## Events
 
-## button_change
+### button_change
 
 Fires if a button is pressed or released. 
 
@@ -92,14 +87,15 @@ Parameters:
     
 * button: the button, See LCDPLATE.buttons for button values.
 
-## Example
-```coffeescript
-lcd.on 'button_change', (button) ->
-    lcd.clear()
-	lcd.message 'Button changed:\n'+lcd.buttonName button
+### Example
+```javascript
+lcd.on('button_change', function(button) {
+  lcd.clear();
+  lcd.message('Button changed:\n' + lcd.buttonName(button));
+});
 ```
 
-## button_up
+### button_up
 
 Fires if a button is released. 
 
@@ -108,7 +104,7 @@ Parameters:
 * button: the button, See LCDPLATE.buttons for button values.
 
 
-## button_down
+### button_down
 
 Fires if a button is pressed.
 
@@ -134,7 +130,6 @@ bit of port A.  It can be set on or off directly in your client code.
 
 
 ## Licence
-BSD
 
 Based on the [Adafruit's Raspberry-Pi Python Code Library](https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code.git)
 

@@ -43,7 +43,7 @@ flip = [0x00, 0x10, 0x08, 0x18,
 pollables = [ LCD_CLEARDISPLAY, LCD_RETURNHOME ]
 
 EventEmitter = require('events').EventEmitter
-WireAdapter = require('./KellyWireAdapter')
+WireAdapter = require('./I2CBusWireAdapter')
 
 class Plate extends EventEmitter
   constructor: (device, address, pollInterval) ->
