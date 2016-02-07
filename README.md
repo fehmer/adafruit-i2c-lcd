@@ -38,7 +38,8 @@ lcd.on('button_change', function(button) {
   - [LCDPLATE.clear()](#lcdplateclear)
   - [LCDPLATE.close()](#lcdplateclose)
   - [LCDPLATE.backlight(color:Number)](#lcdplatebacklightcolornumber)
-  - [LCDPLATE.message(text:String)](#lcdplatemessagetextstring)
+  - [LCDPLATE.message(text:String,[clear:boolean])](#lcdplatemessagetextstring-booleanclear)
+  - [LCDPLATE.createChar(index:Number, pattern:byte[])](#lcdplatecreatecharindexnumber-patternbyte)
   - [LCDPLATE.buttonState():Number](#lcdplatebuttonstatenumber)
   - [LCDPLATE.buttonName(val:Number):String](#lcdplatebuttonnamevalnumberstring)
 
@@ -65,9 +66,26 @@ Set the backlight of the LCD to the given color. You can use predefined colors f
 LCDPLATE.colors = [OFF, RED, GREEN, BLUE, YELLOW, TEAL, VIOLET, WHITE, ON]
 
 
-### LCDPLATE.message(text:String)
+### LCDPLATE.message(text:String, [boolean:clear])
 
-Display the text on the LCD. Use \n as line feed. Only the first two lines will be sent to the display.
+Add the text on the LCD. Use \n as line feed. Only the first two lines will be sent to the display.
+If parameter clear is given and true only the text is shown, previous content on the lcd will be cleared.
+
+### LCDPLATE.createChar(index:Number, pattern:byte[])
+
+Defines custom characters. Index must be between 0 and 7. Pattern is the pattern of your character, must contain exactly 8 bytes.
+E.g. you can easyly design your custom character at http://www.quinapalus.com/hd44780udg.html to show your custom character use eg. lcd.message('\x01').
+
+Example:
+```javascript
+lcd.createChar(1, [0,0,10,31,31,14,4,0]);
+lcd.createChar(2, [0,4,10,17,17,10,4,0]);
+
+lcd.clear();
+lcd.backlight(lcd.colors.RED);
+lcd.message('I\x01 n\x02de.js', true);
+```
+
 
 ### LCDPLATE.buttonState():Number
 

@@ -104,7 +104,8 @@ class Plate extends EventEmitter
     @sendBytes(MCP23017_GPIOA, @PORTA)
     @sendBytes(MCP23017_GPIOB, @PORTB)
     
-  message: (text) ->
+  message: (text, clear) ->
+    @clear() if clear
     lines = text.split('\n')    # Split at newline(s)
     for line, i in lines
       if i==1
@@ -126,6 +127,17 @@ class Plate extends EventEmitter
       when @buttons.LEFT then "LEFT"
       else undefined
     
+  createChar: (location, pattern) ->
+    #Fill one of the first 8 CGRAM locations with custom characters.
+    #The location parameter should be between 0 and 7 and pattern should
+    #provide an array of 8 bytes containing the pattern. E.g. you can easyly
+    #design your custom character at http://www.quinapalus.com/hd44780udg.html
+    #To show your custom character use eg. lcd.message('\x01')
+    location=location&0x7
+    @writeByte(LCD_SETCGRAMADDR | (location << 3))
+    for data in pattern
+      @writeByte(data, true)
+    @clear()
 
 
   init: ()->
