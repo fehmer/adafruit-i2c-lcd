@@ -1,16 +1,16 @@
 {
   "name": "adafruit-i2c-lcd",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "Node Library for using adafruit i2c rgb lcd pi plate",
   "main": "./lib/index.js",
   "dependencies": {
-    "i2c-bus": "^1.0.2"
+    "i2c-bus": "^5.1.0"
   },
   "devDependencies": {
     "coffee-script": ""
   },
   "scripts": {
-    "prepublish": "node_modules/coffee-script/bin/coffee -o lib -c src"
+    "prepare": "node_modules/coffee-script/bin/coffee -o lib -c src"
   },
   "repository": {
     "type": "git",

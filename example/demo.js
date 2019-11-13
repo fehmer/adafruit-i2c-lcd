@@ -3,7 +3,7 @@ LCDPLATE = require('adafruit-i2c-lcd').plate;
 lcd = new LCDPLATE(1, 0x20);
 var index = 0;
 
-# create some custom characters
+// create some custom characters
 lcd.createChar(1, [2, 3, 2, 2, 14, 30, 12, 0])
 lcd.createChar(2, [0, 1, 3, 22, 28, 8, 0, 0])
 lcd.createChar(3, [0, 14, 21, 23, 17, 14, 0, 0])
