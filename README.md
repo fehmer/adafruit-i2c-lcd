@@ -1,11 +1,13 @@
 # Adafruit I2C LCD Plate
 
-Node.js implementation for the Adafruit RGB 16x2 LCD+Keypad Kit for Raspberry Pi 
+Node.js implementation for the Adafruit RGB 16x2 LCD+Keypad Kit for Raspberry Pi
 http://www.adafruit.com/products/1110
 
-**Note:** This readme is for the current version 1.x.x. If you are using older versions please read the [version 0.0.x readme](https://github.com/fehmer/adafruit-i2c-lcd/tree/0.0.x) or [version 0.1.x readme](https://github.com/fehmer/adafruit-i2c-lcd/tree/0.1.x).
+**Note:** This readme is for the current version 1.x.x/2.x.x. If you are using older versions please read the [version 0.0.x readme](https://github.com/fehmer/adafruit-i2c-lcd/tree/0.0.x) or [version 0.1.x readme](https://github.com/fehmer/adafruit-i2c-lcd/tree/0.1.x).
 
 **Note:** Since version 1.0.0 this module is based on [i2c-bus](https://www.npmjs.com/package/i2c-bus). For compatibility with your node.js version read the i2c-bus documentation. Older versions of this module were based on [i2c](https://www.npmjs.com/package/i2c). adafruit-i2c-lcd version 0.1.x only works with node.js 0.12.x and adafruit-i2c-lcd version 0.0.x only works with node.js 0.10.x.
+
+**Note:** Version 2.0.0 and greater drops support for node v4, v5, and v7 as well as npm < v4 (update npm by running the command ```npm i npm -g```)
 
 **Note:** This module is compatible with  Sainsmart 1602 I2C, see [Compatibility](#compatibility)
 
@@ -45,7 +47,7 @@ lcd.on('button_change', function(button) {
 
 ### LCDPLATE(device:String,address:Number,[pollInterval:Number])
 
-Setting up a new LCDPLATE. 
+Setting up a new LCDPLATE.
 
 - device: Device name, e.g. '/dev/i2c-1'
 - address: Address of the i2c panel, e.g. 0x20
@@ -61,7 +63,7 @@ Close the LCD plate. Use this to stop the polling.
 
 ### LCDPLATE.backlight(color:Number)
 
-Set the backlight of the LCD to the given color. You can use predefined colors from the LCDPLATE class: 
+Set the backlight of the LCD to the given color. You can use predefined colors from the LCDPLATE class:
 
 LCDPLATE.colors = [OFF, RED, GREEN, BLUE, YELLOW, TEAL, VIOLET, WHITE, ON]
 
@@ -99,10 +101,10 @@ Returns the name, e.g. 'SELECT' to a button number. See LCDPLATE.buttons for but
 
 ### button_change
 
-Fires if a button is pressed or released. 
+Fires if a button is pressed or released.
 
 Parameters:   
-    
+
 * button: the button, See LCDPLATE.buttons for button values.
 
 ### Example
@@ -115,10 +117,10 @@ lcd.on('button_change', function(button) {
 
 ### button_up
 
-Fires if a button is released. 
+Fires if a button is released.
 
 Parameters:   
-    
+
 * button: the button, See LCDPLATE.buttons for button values.
 
 
@@ -127,7 +129,7 @@ Parameters:
 Fires if a button is pressed.
 
 Parameters:   
-    
+
 * button: the button, See LCDPLATE.buttons for button values.
 
 ## Compatibility
@@ -153,7 +155,7 @@ Based on the [Adafruit's Raspberry-Pi Python Code Library](https://github.com/ad
 
 >  Here is a growing collection of libraries and example python scripts
 >  for controlling a variety of Adafruit electronics with a Raspberry Pi
-  
+
 >  In progress!
 >
 >  Adafruit invests time and resources providing this open source code,
